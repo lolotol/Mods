@@ -38,7 +38,7 @@ This module is designed for Telegram userbots and integrates seamlessly with the
 
 Example in Hikka:
 ```
-.dlmod https://github.com/lolotol/Mods/blob/main/AvatarDownloader/AvatarDownloader.py
+.dlmod https://github.com/lolotol/Mods/raw/main/AvatarDownloader%2FAvatarDownloader.py
 ```
 
 ## Usage Examples
