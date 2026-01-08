@@ -1,13 +1,14 @@
-#██ ████ ██ ████ ████ ████ ██
-#██ █   █ ██ █   █   ██  █   █ ██
-#██ ████ ██ ████   ██  ████ ██
+#  ██ ████ ██ ████ ████ ████ ██
+#  ██ █  █ ██ █   █  ██  █   █ ██
+#  ██ ████ ██ ████   ██  ████ ██
 
 #   https://t.me/lolotol089
+#   https://github.com/lolotol/Mods/raw/main/AvatarDownloader%2FAvatarDownloader.py
 
 # ---------------------------------------------------------------------------------
 # Name: AvatarDownloader
 # Description: Скачивает аватарку пользователя по номеру или рандомно, а также аватарку чата/канала
-# meta developer: @lolotol089
+# meta developer: @lolotol89
 # ---------------------------------------------------------------------------------
 
 import logging
@@ -21,7 +22,7 @@ from telethon import functions
 
 from .. import loader, utils
 
-__version__ = (1, 1, 9)
+__version__ = (1, 2)
 
 logger = logging.getLogger(__name__)
 
