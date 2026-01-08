@@ -3,7 +3,7 @@
 #  ██ ████ ██ ████   ██  ████ ██
 
 #   https://t.me/lolotol089
-#   https://github.com/lolotol/Mods/raw/main/AvatarDownloader%2FAvatarDownloader.py
+#   https://github.com/lolotol/Mods/raw/main/AvatarDownloader
 
 # ---------------------------------------------------------------------------------
 # Name: AvatarDownloader
