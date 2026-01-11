@@ -22,7 +22,7 @@ from telethon import functions
 
 from .. import loader, utils
 
-__version__ = (1, 2)
+__version__ = (1, 2, 1)
 
 logger = logging.getLogger(__name__)
 
