@@ -1,6 +1,6 @@
 #  ██ ████ ██ ████ ████ ████ ██
-#  ██ █  █ ██ █   █  ██  █   █ ██
-#  ██ ████ ██ ████   ██  ████ ██
+#  ██ █   █ ██  █   █  ██   █   █ ██
+#  ██ ████ ██  ████  ██  ████ ██
 
 #   https://t.me/lolotol089
 #   https://github.com/lolotol/Mods/raw/main/AvatarDownloader
@@ -17,14 +17,25 @@ import asyncio
 import random
 import string
 from datetime import datetime as dt
-from telethon.tl.types import Message, DocumentAttributeVideo, VideoSizeEmojiMarkup, User
+from telethon.tl.types import Message, DocumentAttributeVideo, User
 from telethon import functions
 
 from .. import loader, utils
 
-__version__ = (1, 2, 1)
+__version__ = (1, 2, 2)
 
 logger = logging.getLogger(__name__)
+
+def is_video_bytes(data: bytes) -> bool:
+    if len(data) < 8:
+        return False
+    if data[0:2] == b'\xFF\xD8':  # JPEG
+        return False
+    if data[0:8] == b'\x89PNG\r\n\x1A\n':  # PNG
+        return False
+    if data[4:8] == b'ftyp':  # MP4
+        return True
+    return False  # По умолчанию считаем фото
 
 @loader.tds
 class AvatarDownloader(loader.Module):
@@ -141,13 +152,26 @@ class AvatarDownloader(loader.Module):
 
         try:
             res_count = await self._client(functions.photos.GetUserPhotosRequest(
-                user_id=user, offset=0, max_id=0, limit=1
+                user_id=user, offset=0, max_id=0, limit=0
             ))
-            total = res_count.count
+            if hasattr(res_count, 'count'):
+                total = res_count.count
+            else:
+                total = len(res_count.photos)
 
             if total == 0:
-                await utils.answer(message, self.strings["no_avatar_total_zero"])
-                return
+                # Fallback для публичной аватарки
+                media_bytes = await self._client.download_profile_photo(user, file=bytes)
+                if media_bytes:
+                    number = 1
+                    total = 1
+                    is_video = is_video_bytes(media_bytes)
+                    caption = self.strings["random_avatar"].format(number=number, total=total)
+                    await self._send_media(message, media_bytes, caption, message.reply_to_msg_id, is_video)
+                    return
+                else:
+                    await utils.answer(message, self.strings["no_avatar_total_zero"])
+                    return
 
             number = random.randint(1, total)
 
@@ -177,7 +201,7 @@ class AvatarDownloader(loader.Module):
 
     @loader.command()
     async def getava(self, message: Message):
-        """ — скачать аватарку по номеру пользователя или текущую чата: .getava [номер] [пользователь/reply]"""
+        """ [номер] [username/reply] — скачать аватарку по номеру пользователя или текущую чата"""
         args = utils.get_args_raw(message).split()
         number = None
         target_arg = ""
@@ -230,13 +254,30 @@ class AvatarDownloader(loader.Module):
 
         try:
             count_res = await self._client(functions.photos.GetUserPhotosRequest(
-                user_id=target, offset=0, max_id=0, limit=1
+                user_id=target, offset=0, max_id=0, limit=0
             ))
-            total = count_res.count
+            if hasattr(count_res, 'count'):
+                total = count_res.count
+            else:
+                total = len(count_res.photos)
 
             if total == 0:
-                await utils.answer(message, self.strings["no_avatar_total_zero"])
-                return
+                # Fallback для публичной аватарки
+                if number != 1:
+                    await utils.answer(message, self.strings["no_avatar_number"].format(number=number, total=0))
+                    return
+
+                media_bytes = await self._client.download_profile_photo(target, file=bytes)
+                if media_bytes:
+                    is_video = is_video_bytes(media_bytes)
+                    caption_key = "video_avatar" if is_video else "photo_avatar"
+                    caption = self.strings[caption_key].format(number=1, total=1)
+                    await self._send_media(message, media_bytes, caption, reply_to_id, is_video)
+                    return
+                else:
+                    await utils.answer(message, self.strings["no_avatar_total_zero"])
+                    return
+
             if number > total:
                 await utils.answer(message, self.strings["no_avatar_number"].format(number=number, total=total))
                 return
@@ -268,7 +309,7 @@ class AvatarDownloader(loader.Module):
 
     @loader.command()
     async def getmyava(self, message: Message):
-        """ — скачать свою аватарку по номеру: .getmyava [номер]"""
+        """ [номер] — скачать свою аватарку по номеру"""
         args = utils.get_args_raw(message).strip()
         if args:
             try:
@@ -286,13 +327,30 @@ class AvatarDownloader(loader.Module):
 
         try:
             count_res = await self._client(functions.photos.GetUserPhotosRequest(
-                user_id=user, offset=0, max_id=0, limit=1
+                user_id=user, offset=0, max_id=0, limit=0
             ))
-            total = count_res.count
+            if hasattr(count_res, 'count'):
+                total = count_res.count
+            else:
+                total = len(count_res.photos)
 
             if total == 0:
-                await utils.answer(message, self.strings["no_avatar_total_zero"])
-                return
+                # Fallback для публичной аватарки
+                if number != 1:
+                    await utils.answer(message, self.strings["no_avatar_number"].format(number=number, total=0))
+                    return
+
+                media_bytes = await self._client.download_profile_photo(user, file=bytes)
+                if media_bytes:
+                    is_video = is_video_bytes(media_bytes)
+                    caption_key = "video_avatar" if is_video else "photo_avatar"
+                    caption = self.strings[caption_key].format(number=1, total=1)
+                    await self._send_media(message, media_bytes, caption, reply_to_id, is_video)
+                    return
+                else:
+                    await utils.answer(message, self.strings["no_avatar_total_zero"])
+                    return
+
             if number > total:
                 await utils.answer(message, self.strings["no_avatar_number"].format(number=number, total=total))
                 return
@@ -324,7 +382,7 @@ class AvatarDownloader(loader.Module):
 
     @loader.command()
     async def randomava(self, message: Message):
-        """ — рандомная аватарка пользователя: .randomava [пользователь/reply]"""
+        """ [username/reply] — рандомная аватарка пользователя"""
         args = utils.get_args_raw(message)
         target_arg = args if args else ""
 
