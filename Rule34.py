@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class Rule34(loader.Module):
-    """Поиск контента на Rule34.xxx с поддержкой видео и случайным режимом"""
+    """Поиск контента на Rule34."""
 
     strings = {
         "name": "Rule34",
@@ -275,7 +275,6 @@ class Rule34(loader.Module):
             return None
 
     def _build_tags_string(self, include: str) -> str:
-        """Корректно собирает строку тегов для API: positive + -negative, без ведущих пробелов/-"""
         positive_tags = [t.strip() for t in include.split() if t.strip()]
 
         negative_tags = [t.strip() for t in self.config["exclude_tags"].split() if t.strip()]
